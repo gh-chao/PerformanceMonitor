@@ -1,12 +1,12 @@
 {
-    "name": "Lilocon/PerformanceMonitor",
+    "name": "lilocon/performance-monitor",
     "type": "library",
     "description": "",
     "keywords": [
         "Lilocon",
         "PerformanceMonitor"
     ],
-    "homepage": "https://github.com/Lilocon/PerformanceMonitor",
+    "homepage": "https://github.com/lilocon/PerformanceMonitor",
     "license": "MIT",
     "authors": [
         {
