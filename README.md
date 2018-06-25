@@ -12,7 +12,7 @@ $ composer require lilocon/performance-monitor
 注册 `ServiceProvider`:
 
 ```php
-\Lilocon\RouterCache\RouterCacheServiceProvider::class,
+\Lilocon\PerformanceMonitor\PerformanceMonitorServiceProvider::class,
 ```
 
 
