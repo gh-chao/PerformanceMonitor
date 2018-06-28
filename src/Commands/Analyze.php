@@ -120,23 +120,25 @@ class Analyze extends Command
             throw new \ErrorException('日志文件不存在');
         }
         if (!$this->filesystem->isFile($file)) {
-            throw new \ErrorException('该路径不是一个文件');
+            throw new \ErrorException('无法读取日志文件');
         }
 
         $fp = fopen($file, 'r');
 
         $this->output->writeln("正在导入数据");
 
-        $max = 100000;
+        // 最大分析10w数据
+        $max = $this->filelines($file);
         $progressBar = $this->output->createProgressBar($max);
         $i = 1;
         while ($line = fgets($fp)) {
             if ($i++ > $max) {
-                // 最大分析10w数据
                 break;
             }
 
-            $progressBar->setProgress($i);
+            if ($i % 100 == 0) {
+                $progressBar->setProgress($i);
+            }
 
             $info = json_decode($line, true);
 
@@ -157,6 +159,25 @@ class Analyze extends Command
         $this->output->writeln("导入成功:共导入{$i}条数据");
 
         return;
+    }
+
+
+    private function filelines($file)
+    {
+
+        $getfp = fopen($file, 'r');
+        $lines = 0;
+
+        while (fgets($getfp)) {
+            $lines++;
+            if ($lines > 100000) {
+                fclose($getfp); //关闭文件
+                return $lines;
+            }
+        }
+        fclose($getfp); //关闭文件
+
+        return $lines;
     }
 
 }
