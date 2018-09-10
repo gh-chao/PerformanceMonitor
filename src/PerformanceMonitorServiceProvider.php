@@ -4,6 +4,12 @@ namespace Lilocon\PerformanceMonitor;
 
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Class PerformanceMonitorServiceProvider
+ * @package Lilocon\PerformanceMonitor
+ *
+ * @property \Illuminate\Foundation\Application $app
+ */
 class PerformanceMonitorServiceProvider extends ServiceProvider
 {
     /**

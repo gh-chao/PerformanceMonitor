@@ -47,6 +47,7 @@ class Analyze extends Command
      * Execute the console command.
      *
      * @return mixed
+     * @throws \ErrorException
      */
     public function handle()
     {
@@ -68,7 +69,7 @@ class Analyze extends Command
     public function runAnalyze($orderColumn, $name)
     {
         $columns = [
-            '路由名' => 'route_name',
+            'Action' => 'action',
             '访问量' => 'count(*) as hit',
             '总执行时间' => 'SUM(exec_time) as exec_time_sum',
             '平均查询次数' => 'SUM(query_count)/count(*) as query_count_avg',
@@ -79,19 +80,22 @@ class Analyze extends Command
 
         $rows = \DB::table($this->schemaName)
             ->select(\DB::raw(implode(', ', $columns)))
-            ->groupBy('route_name')
+            ->groupBy('action')
             ->orderBy($orderColumn, 'desc')
             ->limit(20)
             ->get();
 
+        if ($rows instanceof \Traversable) {
+            $rows = iterator_to_array($rows);
+        }
+
         $rows = array_map(function ($row) {
             return (array)$row;
-        }, $rows->toArray());
+        }, $rows);
 
         $this->output->title('按' . $name . '排序');
 
         $this->table(array_keys($columns), $rows);
-
 
     }
 
@@ -103,7 +107,7 @@ class Analyze extends Command
             $table->float('exec_time');
             $table->integer('query_count');
             $table->float('query_time');
-            $table->string('route_name');
+            $table->string('action');
         });
     }
 
@@ -123,7 +127,7 @@ class Analyze extends Command
             throw new \ErrorException('无法读取日志文件');
         }
 
-        $fp = fopen($file, 'r');
+        $fileObject = new \SplFileObject($file);
 
         $this->output->writeln("正在导入数据");
 
@@ -131,7 +135,7 @@ class Analyze extends Command
         $max = $this->filelines($file);
         $progressBar = $this->output->createProgressBar($max);
         $i = 1;
-        while ($line = fgets($fp)) {
+        while ($line = $fileObject->fgets()) {
             if ($i++ > $max) {
                 break;
             }
@@ -142,18 +146,16 @@ class Analyze extends Command
 
             $info = json_decode($line, true);
 
-            if ($info['route_name'] == null) {
-                $info['route_name'] = '';
-            }
-
             \DB::table($this->schemaName)->insert([
                 'exec_time' => $info['exec_time'],
                 'query_count' => $info['query_count'],
                 'query_time' => $info['query_time'],
-                'route_name' => $info['route_name'],
+                'action' => (string)$info['action'],
             ]);
 
         }
+
+        unset($fileObject);
 
         $this->output->newLine();
         $this->output->writeln("导入成功:共导入{$i}条数据");

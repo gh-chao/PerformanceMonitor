@@ -59,7 +59,7 @@ class Collector
         }
 
         return [
-            'route_name' => \Route::currentRouteName(),
+            'action' => \Route::currentRouteAction(),
             'url' => request()->url(),
             'exec_time' => $this->terminatedAt - $this->startAt, // 整个请求的时间
             'query_count' => count($this->queries), // 一共多少sql
